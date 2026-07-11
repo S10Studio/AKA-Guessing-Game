@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Who's Really Who?</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Work+Sans:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#211B36;
+    --ink-soft:#726C8C;
+    --accent:#6C4EF5;
+    --accent-deep:#4B2FD1;
+    --accent-soft:#EFE9FF;
+    --gold:#F0A93B;
+    --good:#1FAF6E;
+    --bad:#E7566E;
+    --line:#ECE8F7;
+    --card-bg:#ffffff;
+  }
+  *{box-sizing:border-box;}
+  html,body{
+    margin:0;
+    padding:0;
+    background:transparent;
+    min-height:100vh;
+    font-family:'Work Sans', system-ui, -apple-system, sans-serif;
+    color:var(--ink);
+  }
+  body{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:24px;
+  }
+  .card{
+    position:relative;
+    width:min(420px, 92vw);
+    min-height:540px;
+    background:var(--card-bg);
+    border-radius:28px;
+    box-shadow:0 24px 60px -18px rgba(33,27,54,0.35), 0 4px 14px rgba(33,27,54,0.07);
+    display:flex;
+    flex-direction:column;
+    overflow:hidden;
+  }
+  .progress-track{
+    height:5px;
+    width:100%;
+    background:var(--line);
+    flex-shrink:0;
+  }
+  .progress-fill{
+    height:100%;
+    background:linear-gradient(90deg, var(--accent), var(--accent-deep));
+    width:0%;
+    transition:width .45s ease;
+  }
+  .stage{
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    padding:34px 30px 28px;
+  }
+  .stage-inner{
+    display:flex;
+    flex-direction:column;
+    flex:1;
+    animation:rise .35s ease;
+  }
+  @keyframes rise{
+    from{opacity:0; transform:translateY(10px);}
+    to{opacity:1; transform:translateY(0);}
+  }
+  .center{ align-items:center; text-align:center; justify-content:center; }
+  .eyebrow{
+    font-family:'JetBrains Mono', ui-monospace, monospace;
+    font-size:11px;
+    font-weight:500;
+    letter-spacing:.12em;
+    color:var(--accent-deep);
+    background:var(--accent-soft);
+    display:inline-block;
+    padding:5px 10px;
+    border-radius:999px;
+    margin-bottom:16px;
+    align-self:flex-start;
+  }
+  .center .eyebrow{ align-self:center; }
+  .title{
+    font-family:'Fredoka', ui-rounded, sans-serif;
+    font-weight:600;
+    font-size:24px;
+    line-height:1.25;
+    margin:0 0 8px;
+  }
+  .subtitle{
+    color:var(--ink-soft);
+    font-size:14.5px;
+    line-height:1.5;
+    margin:0 0 22px;
+  }
+  .mask-hero{ margin-bottom:8px; }
+  .text-input{
+    width:100%;
+    border:2px solid var(--line);
+    border-radius:14px;
+    padding:14px 16px;
+    font-size:16px;
+    font-family:inherit;
+    color:var(--ink);
+    outline:none;
+    margin-bottom:10px;
+    transition:border-color .15s ease;
+    background:#FBFAFF;
+  }
+  .text-input:focus{ border-color:var(--accent); background:#fff; }
+  .error-msg{
+    color:var(--bad);
+    font-size:12.5px;
+    font-weight:500;
+    margin:-4px 0 10px;
+    min-height:16px;
+  }
+  .spacer{ flex:1; }
+  .btn{
+    border:none;
+    border-radius:999px;
+    padding:14px 22px;
+    font-family:'Work Sans', sans-serif;
+    font-weight:600;
+    font-size:15px;
+    cursor:pointer;
+    transition:transform .12s ease, opacity .12s ease, box-shadow .12s ease;
+  }
+  .btn:active{ transform:scale(.97); }
+  .btn.primary{
+    background:var(--accent);
+    color:#fff;
+    box-shadow:0 10px 22px -8px rgba(108,78,245,0.65);
+  }
+  .btn.primary:hover{ background:var(--accent-deep); }
+  .btn.primary:disabled{
+    opacity:.4;
+    cursor:not-allowed;
+    box-shadow:none;
+  }
+  .btn.ghost{
+    background:transparent;
+    color:var(--accent-deep);
+    border:2px solid var(--accent-soft);
+  }
+  .btn.ghost:hover{ border-color:var(--accent); }
+  .btn.block{ width:100%; }
+  .pass-icon{ font-size:52px; margin-bottom:6px; }
+  .col-label{
+    font-family:'JetBrains Mono', monospace;
+    font-size:10.5px;
+    letter-spacing:.1em;
+    color:var(--ink-soft);
+    margin-bottom:8px;
+    text-transform:uppercase;
+  }
+  .match-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:14px;
+    margin-bottom:18px;
+  }
+  .chip-list{ display:flex; flex-direction:column; gap:8px; }
+  .chip{
+    border:2px solid var(--line);
+    border-radius:12px;
+    padding:11px 12px;
+    font-size:13.5px;
+    font-weight:500;
+    cursor:pointer;
+    background:#FBFAFF;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:6px;
+    transition:all .12s ease;
+    line-height:1.3;
+  }
+  .chip.target{ }
+  .chip.target.selected{
+    border-color:var(--accent);
+    background:var(--accent-soft);
+  }
+  .chip.target.assigned{
+    border-color:var(--good);
+    background:#F0FBF6;
+  }
+  .chip.target .clear-x{
+    color:var(--bad);
+    font-weight:700;
+    font-size:14px;
+    padding:0 2px;
+    flex-shrink:0;
+  }
+  .chip.guess{
+    text-align:center;
+    justify-content:center;
+  }
+  .chip.guess.used{
+    opacity:.35;
+    cursor:not-allowed;
+    background:var(--line);
+  }
+  .chip.guess.active-target{
+    border-color:var(--accent);
+  }
+  .assigned-name{
+    color:var(--good);
+    font-weight:600;
+    font-size:12px;
+  }
+  .badge-row{
+    display:flex;
+    flex-direction:column;
+    gap:14px;
+    margin-bottom:6px;
+  }
+  .badge-card{
+    border:2px solid var(--line);
+    border-radius:16px;
+    padding:14px 16px;
+  }
+  .badge-top{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin-bottom:8px;
+  }
+  .badge-circle{
+    width:38px; height:38px;
+    border-radius:50%;
+    background:var(--accent-soft);
+    display:flex; align-items:center; justify-content:center;
+    flex-shrink:0;
+    font-family:'Fredoka', sans-serif;
+    font-weight:600;
+    color:var(--accent-deep);
+    font-size:15px;
+    perspective:600px;
+  }
+  .flip-inner{
+    width:100%; height:100%;
+    position:relative;
+    transform-style:preserve-3d;
+    transition:transform .6s cubic-bezier(.4,.2,.2,1);
+    display:flex; align-items:center; justify-content:center;
+  }
+  .flip-inner.flipped{ transform:rotateY(180deg); }
+  .flip-face{
+    position:absolute;
+    inset:0;
+    display:flex; align-items:center; justify-content:center;
+    backface-visibility:hidden;
+    border-radius:50%;
+  }
+  .flip-face.back{ transform:rotateY(180deg); background:var(--good); color:#fff; }
+  .badge-names{ display:flex; flex-direction:column; }
+  .badge-display{ font-weight:600; font-size:14.5px; }
+  .badge-real{ font-size:12px; color:var(--ink-soft); }
+  .guess-line{
+    font-size:12.5px;
+    display:flex;
+    align-items:center;
+    gap:6px;
+    padding:3px 0;
+    color:var(--ink-soft);
+  }
+  .guess-line b{ color:var(--ink); font-weight:600; }
+  .tag-good{ color:var(--good); font-weight:700; }
+  .tag-bad{ color:var(--bad); font-weight:700; }
+  .board-row{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:10px 4px;
+    border-bottom:1px solid var(--line);
+    font-size:14px;
+  }
+  .board-row:last-child{ border-bottom:none; }
+  .board-name{ font-weight:600; display:flex; align-items:center; gap:6px; }
+  .board-score{
+    font-family:'JetBrains Mono', monospace;
+    font-weight:500;
+    color:var(--accent-deep);
+    background:var(--accent-soft);
+    padding:3px 9px;
+    border-radius:999px;
+    font-size:12.5px;
+  }
+</style>
+</head>
+<body>
+  <div class="card">
+    <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+    <div class="stage" id="stage"></div>
+  </div>
+
+<script>
+(function(){
+  var TOTAL = 4;
+
+  var state = {
+    phase: 'intro',
+    playerIndex: 0,
+    players: [],
+    order: [],
+    voterIndex: 0,
+    votes: [],
+    currentGuesses: {},
+    selectedTarget: null,
+    revealFlipped: false
+  };
+
+  function esc(s){
+    var d = document.createElement('div');
+    d.textContent = s == null ? '' : s;
+    return d.innerHTML;
+  }
+
+  function shuffledIndices(n){
+    var arr = [];
+    for (var i=0;i<n;i++) arr.push(i);
+    for (var j=arr.length-1;j>0;j--){
+      var k = Math.floor(Math.random()*(j+1));
+      var t = arr[j]; arr[j]=arr[k]; arr[k]=t;
+    }
+    return arr;
+  }
+
+  function maskIcon(){
+    return '<svg width="56" height="56" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+      '<rect x="4" y="18" width="48" height="20" rx="10" fill="#EFE9FF" stroke="#6C4EF5" stroke-width="2.5"/>' +
+      '<circle cx="18" cy="28" r="5" fill="#6C4EF5"/>' +
+      '<circle cx="38" cy="28" r="5" fill="#6C4EF5"/>' +
+      '<path d="M24 28 Q28 31 32 28" stroke="#6C4EF5" stroke-width="2.5" fill="none" stroke-linecap="round"/>' +
+      '</svg>';
+  }
+
+  function setStage(html){
+    document.getElementById('stage').innerHTML = html;
+    updateProgress();
+    var firstInput = document.querySelector('.text-input');
+    if (firstInput) firstInput.focus();
+  }
+
+  function updateProgress(){
+    var frac = 0;
+    if (state.phase === 'intro') frac = 0;
+    else if (state.phase.indexOf('setup') === 0){
+      var step = state.phase === 'setupPass' ? 0 : state.phase === 'setupDisplay' ? 0.33 : 0.66;
+      frac = ((state.playerIndex + step) / TOTAL) / 3;
+    } else if (state.phase.indexOf('voting') === 0){
+      var vstep = state.phase === 'votingPass' ? 0 : 0.5;
+      frac = 1/3 + ((state.voterIndex + vstep) / TOTAL) / 3;
+    } else if (state.phase === 'reveal'){
+      frac = state.revealFlipped ? 1 : 2/3;
+    }
+    document.getElementById('progressFill').style.width = (frac*100) + '%';
+  }
+
+  function render(){
+    if (state.phase === 'intro') return renderIntro();
+    if (state.phase === 'setupPass') return renderSetupPass();
+    if (state.phase === 'setupDisplay') return renderSetupDisplay();
+    if (state.phase === 'setupReal') return renderSetupReal();
+    if (state.phase === 'votingPass') return renderVotingPass();
+    if (state.phase === 'voting') return renderVoting();
+    if (state.phase === 'reveal') return renderReveal();
+  }
+
+  function renderIntro(){
+    setStage(
+      '<div class="stage-inner center">' +
+        '<div class="eyebrow">A PASS-THE-DEVICE PARTY GAME</div>' +
+        '<div class="mask-hero">' + maskIcon() + '</div>' +
+        '<h1 class="title">Who\'s Really Who?</h1>' +
+        '<p class="subtitle">' + TOTAL + ' players each pick a secret display name. Then everyone tries to guess who\'s hiding behind each one.</p>' +
+        '<button class="btn primary block" data-action="start">Start Game</button>' +
+      '</div>'
+    );
+  }
+
+  function renderSetupPass(){
+    var n = state.playerIndex + 1;
+    setStage(
+      '<div class="stage-inner center">' +
+        '<div class="eyebrow">PLAYER ' + n + ' OF ' + TOTAL + '</div>' +
+        '<div class="pass-icon">🤫</div>' +
+        '<h2 class="title">Pass the device to Player ' + n + '</h2>' +
+        '<p class="subtitle">Make sure no one else is peeking at the screen.</p>' +
+        '<button class="btn primary block" data-action="setup-pass-ready">I\'m ready</button>' +
+      '</div>'
+    );
+  }
+
+  function renderSetupDisplay(){
+    var n = state.playerIndex + 1;
+    setStage(
+      '<div class="stage-inner">' +
+        '<div class="eyebrow">PLAYER ' + n + ' · STEP 1 OF 2</div>' +
+        '<h2 class="title">Pick a display name</h2>' +
+        '<p class="subtitle">This is the secret alias everyone else will see. Make it fun.</p>' +
+        '<input id="textInput" class="text-input" placeholder="e.g. Silver Fox" maxlength="24" autocomplete="off">' +
+        '<div class="error-msg" id="errorMsg"></div>' +
+        '<div class="spacer"></div>' +
+        '<button class="btn primary block" data-action="setup-display-continue">Continue</button>' +
+      '</div>'
+    );
+    bindEnter('setup-display-continue');
+  }
+
+  function renderSetupReal(){
+    var n = state.playerIndex + 1;
+    setStage(
+      '<div class="stage-inner">' +
+        '<div class="eyebrow">PLAYER ' + n + ' · STEP 2 OF 2</div>' +
+        '<h2 class="title">What\'s your real first name?</h2>' +
+        '<p class="subtitle">Only you can see this right now &mdash; it stays hidden until the big reveal.</p>' +
+        '<input id="textInput" class="text-input" placeholder="e.g. Jordan" maxlength="24" autocomplete="off">' +
+        '<div class="error-msg" id="errorMsg"></div>' +
+        '<div class="spacer"></div>' +
+        '<button class="btn primary block" data-action="setup-real-continue">Save & Continue</button>' +
+      '</div>'
+    );
+    bindEnter('setup-real-continue');
+  }
+
+  function bindEnter(action){
+    var input = document.getElementById('textInput');
+    if (!input) return;
+    input.addEventListener('keydown', function(e){
+      if (e.key === 'Enter') handleAction(action, {});
+    });
+  }
+
+  function renderVotingPass(){
+    var voter = state.players[state.order[state.voterIndex]];
+    setStage(
+      '<div class="stage-inner center">' +
+        '<div class="eyebrow">VOTING · TURN ' + (state.voterIndex+1) + ' OF ' + TOTAL + '</div>' +
+        '<div class="pass-icon">🗳️</div>' +
+        '<h2 class="title">Pass the device to ' + esc(voter.real) + '</h2>' +
+        '<p class="subtitle">Time to guess who\'s behind each display name.</p>' +
+        '<button class="btn primary block" data-action="voting-pass-ready">It\'s my turn</button>' +
+      '</div>'
+    );
+  }
+
+  function renderVoting(){
+    var voterOriginalIdx = state.order[state.voterIndex];
+    var voter = state.players[voterOriginalIdx];
+    var targets = state.order.filter(function(idx){ return idx !== voterOriginalIdx; });
+
+    var usedOwners = {};
+    Object.keys(state.currentGuesses).forEach(function(k){
+      usedOwners[state.currentGuesses[k]] = true;
+    });
+
+    var targetChips = targets.map(function(idx){
+      var p = state.players[idx];
+      var isSelected = state.selectedTarget === idx;
+      var isAssigned = state.currentGuesses.hasOwnProperty(idx);
+      var cls = 'chip target' + (isSelected ? ' selected' : '') + (isAssigned ? ' assigned' : '');
+      var label = isAssigned
+        ? '<span>' + esc(p.display) + '</span><span class="assigned-name">→ ' + esc(state.players[state.currentGuesses[idx]].real) + '</span>'
+        : '<span>' + esc(p.display) + '</span>';
+      var clearBtn = isAssigned ? '<span class="clear-x" data-action="clear-target" data-idx="' + idx + '">✕</span>' : '';
+      return '<div class="' + cls + '" data-action="select-target" data-idx="' + idx + '">' + label + clearBtn + '</div>';
+    }).join('');
+
+    var guessChips = targets.map(function(idx){
+      var p = state.players[idx];
+      var isUsed = !!usedOwners[idx];
+      var cls = 'chip guess' + (isUsed ? ' used' : '');
+      return '<div class="' + cls + '" data-action="select-guess" data-owner="' + idx + '">' + esc(p.real) + '</div>';
+    }).join('');
+
+    var allAssigned = Object.keys(state.currentGuesses).length === targets.length;
+
+    setStage(
+      '<div class="stage-inner">' +
+        '<div class="eyebrow">' + esc(voter.real).toUpperCase() + '\'S TURN</div>' +
+        '<h2 class="title">Who\'s behind each name?</h2>' +
+        '<p class="subtitle">Tap a display name, then tap the real name you think matches it.</p>' +
+        '<div class="match-grid">' +
+          '<div><div class="col-label">Display Names</div><div class="chip-list">' + targetChips + '</div></div>' +
+          '<div><div class="col-label">Real Names</div><div class="chip-list">' + guessChips + '</div></div>' +
+        '</div>' +
+        '<div class="spacer"></div>' +
+        '<button class="btn primary block" data-action="submit-votes" ' + (allAssigned ? '' : 'disabled') + '>Submit Votes</button>' +
+      '</div>'
+    );
+  }
+
+  function renderReveal(){
+    if (!state.revealFlipped){
+      setStage(
+        '<div class="stage-inner center">' +
+          '<div class="eyebrow">FINAL REVEAL</div>' +
+          '<div class="pass-icon">🎭</div>' +
+          '<h2 class="title">Ready to find out who\'s who?</h2>' +
+          '<p class="subtitle">Everyone gather round the screen for this part.</p>' +
+          '<button class="btn primary block" data-action="do-reveal">Reveal Everyone</button>' +
+        '</div>'
+      );
+      return;
+    }
+
+    var badgeRows = state.order.map(function(idx){
+      var p = state.players[idx];
+      var otherVoters = state.order.filter(function(v){ return v !== idx; });
+      var guessLines = otherVoters.map(function(voterIdx){
+        var voteEntry = state.votes.filter(function(v){ return v.voter === voterIdx; })[0];
+        var voterName = state.players[voterIdx].real;
+        if (!voteEntry) return '';
+        var guessedOwner = voteEntry.guesses[idx];
+        if (guessedOwner === undefined) return '';
+        var correct = guessedOwner === idx;
+        return '<div class="guess-line">' +
+          (correct ? '<span class="tag-good">✓</span>' : '<span class="tag-bad">✕</span>') +
+          ' <b>' + esc(voterName) + '</b> guessed ' + (correct ? 'correctly' : ('<b>' + esc(state.players[guessedOwner].real) + '</b>')) +
+          '</div>';
+      }).join('');
+
+      return '<div class="badge-card">' +
+        '<div class="badge-top">' +
+          '<div class="badge-circle"><div class="flip-inner flipped">' +
+            '<div class="flip-face back">✓</div>' +
+          '</div></div>' +
+          '<div class="badge-names">' +
+            '<div class="badge-display">"' + esc(p.display) + '"</div>' +
+            '<div class="badge-real">was really ' + esc(p.real) + '</div>' +
+          '</div>' +
+        '</div>' +
+        guessLines +
+      '</div>';
+    }).join('');
+
+    var scores = state.order.map(function(idx){
+      var voteEntry = state.votes.filter(function(v){ return v.voter === idx; })[0];
+      var correctCount = 0;
+      if (voteEntry){
+        Object.keys(voteEntry.guesses).forEach(function(t){
+          if (voteEntry.guesses[t] === parseInt(t)) correctCount++;
+        });
+      }
+      return { name: state.players[idx].real, score: correctCount };
+    }).sort(function(a,b){ return b.score - a.score; });
+
+    var topScore = scores.length ? scores[0].score : 0;
+
+    var boardRows = scores.map(function(s){
+      var isTop = s.score === topScore && topScore > 0;
+      return '<div class="board-row">' +
+        '<div class="board-name">' + (isTop ? '🏆 ' : '') + esc(s.name) + '</div>' +
+        '<div class="board-score">' + s.score + '/' + (TOTAL-1) + '</div>' +
+      '</div>';
+    }).join('');
+
+    setStage(
+      '<div class="stage-inner">' +
+        '<div class="eyebrow">THE REVEAL</div>' +
+        '<h2 class="title">Here\'s who was who</h2>' +
+        '<div class="badge-row">' + badgeRows + '</div>' +
+        '<div class="col-label" style="margin-top:6px;">Detective Leaderboard</div>' +
+        '<div style="margin-bottom:18px;">' + boardRows + '</div>' +
+        '<button class="btn ghost block" data-action="play-again">Play Again</button>' +
+      '</div>'
+    );
+  }
+
+  function handleAction(action, ds){
+    if (action === 'start'){
+      state.phase = 'setupPass';
+      state.playerIndex = 0;
+    }
+    else if (action === 'setup-pass-ready'){
+      state.phase = 'setupDisplay';
+    }
+    else if (action === 'setup-display-continue'){
+      var val = document.getElementById('textInput').value.trim();
+      if (!val){
+        document.getElementById('errorMsg').textContent = 'Enter a display name to continue.';
+        return;
+      }
+      state.players[state.playerIndex] = { display: val, real: '' };
+      state.phase = 'setupReal';
+    }
+    else if (action === 'setup-real-continue'){
+      var val2 = document.getElementById('textInput').value.trim();
+      if (!val2){
+        document.getElementById('errorMsg').textContent = 'Enter your first name to continue.';
+        return;
+      }
+      state.players[state.playerIndex].real = val2;
+      state.playerIndex++;
+      if (state.playerIndex < TOTAL){
+        state.phase = 'setupPass';
+      } else {
+        state.order = shuffledIndices(TOTAL);
+        state.voterIndex = 0;
+        state.phase = 'votingPass';
+      }
+    }
+    else if (action === 'voting-pass-ready'){
+      state.currentGuesses = {};
+      state.selectedTarget = null;
+      state.phase = 'voting';
+    }
+    else if (action === 'select-target'){
+      var idx = parseInt(ds.idx);
+      state.selectedTarget = (state.selectedTarget === idx) ? null : idx;
+    }
+    else if (action === 'clear-target'){
+      var cidx = parseInt(ds.idx);
+      delete state.currentGuesses[cidx];
+      if (state.selectedTarget === cidx) state.selectedTarget = null;
+    }
+    else if (action === 'select-guess'){
+      if (state.selectedTarget === null) return;
+      var owner = parseInt(ds.owner);
+      var alreadyUsedTarget = null;
+      Object.keys(state.currentGuesses).forEach(function(k){
+        if (state.currentGuesses[k] === owner) alreadyUsedTarget = parseInt(k);
+      });
+      var previousOwnerOfSelected = state.currentGuesses[state.selectedTarget];
+      state.currentGuesses[state.selectedTarget] = owner;
+      if (alreadyUsedTarget !== null && alreadyUsedTarget !== state.selectedTarget){
+        if (previousOwnerOfSelected !== undefined){
+          state.currentGuesses[alreadyUsedTarget] = previousOwnerOfSelected;
+        } else {
+          delete state.currentGuesses[alreadyUsedTarget];
+        }
+      }
+      state.selectedTarget = null;
+    }
+    else if (action === 'submit-votes'){
+      state.votes.push({ voter: state.order[state.voterIndex], guesses: state.currentGuesses });
+      state.voterIndex++;
+      state.currentGuesses = {};
+      state.selectedTarget = null;
+      if (state.voterIndex < TOTAL){
+        state.phase = 'votingPass';
+      } else {
+        state.phase = 'reveal';
+        state.revealFlipped = false;
+      }
+    }
+    else if (action === 'do-reveal'){
+      state.revealFlipped = true;
+    }
+    else if (action === 'play-again'){
+      state = {
+        phase: 'intro', playerIndex: 0, players: [], order: [],
+        voterIndex: 0, votes: [], currentGuesses: {}, selectedTarget: null, revealFlipped: false
+      };
+    }
+    render();
+  }
+
+  document.getElementById('stage').addEventListener('click', function(e){
+    var el = e.target.closest('[data-action]');
+    if (!el || el.disabled) return;
+    handleAction(el.getAttribute('data-action'), el.dataset);
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>
